@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+    <link rel=preload href=/styles/main.css as=style>
+    <title>Example</title>
+    <meta name=description content="Example page">
+    <meta name=viewport content="initial-scale=1">
+    <meta name=msapplication-config content=none>
+    <link rel=stylesheet href=/styles/main.css>
+    <link rel="shortcut icon" href=/images/favicon.ico>
+    <link rel=apple-touch-icon href=/images/apple-touch-icon.png>
+</head>
+
+<body class="home png">
+
+    <header id=top>
+        <section class=upload>
+            <figure class=cloud-one></figure>
+            <figure class=cloud-two></figure>
+            <figure class=bamboo></figure>
+            <figure class=panda data-panda></figure>
+            <figure class=grass></figure>
+            <section class=files data-file-list></section>
+            <section class=overview data-overview></section>
+        </section>
+    </header>
+
+    <main class=highlight>
+        <div class=hgroup>
+            <h1>Example page</h1>
+            <h2>Use Node.js and you will be happy!</h2>
+            <h3><span id=greeting></span>&nbsp;<span id=firstname></span>&nbsp;<span id=lastname></span></h3>
+        </div>
+    </main>
+
+    <main class="customerlogos">
+        <h2>What is your name?</h2>
+        <form method="POST" action="" id="user">
+            <label for="form_firstname">Firstname: </label>
+            <input id="form_firstname" type="text" name="firstname" value="">
+            <label for="form_lastname">Lastname: </label>
+            <input id="form_lastname" type="text" name="lastname" value="">
+            <button type="submit">Submit</button>
+        </form>
+    </main>
+
+    <footer>
+        <div class=container>
+            <ul class=columns></ul>
+        </div>
+        <div class=bottom>
+            <div class=content></div>
+        </div>
+    </footer>
+
+    <script>
+      /**
+       * Установка значения тега по его идентификатору
+       */
+      function setValue(id, value) {
+          var s = document.getElementById(id);
+          s.innerHTML = value;
+      }
+
+      /**
+       * Получаем данные с сервера
+       */
+      function load() {
+        fetch('/get')
+          .then(function(response) {
+            // конвертируем полученную JSON строку в JavaScript объект
+            return response.json();
+           })
+          .then(function(data) {
+            // проверяем наличие необходимых значений в объекте
+            if (data && data.user && data.user.firstname && data.user.lastname) {
+              setValue('greeting', 'Welcome');
+              setValue('firstname', data.user.firstname);
+              setValue('lastname', data.user.lastname);
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+          });
+      }
+
+      /**
+       * Сохранение данных на сервере
+       */
+      function save(payload) {
+        if (!payload) {
+          throw new Error("No information to send data");
+        }
+        fetch('/set', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload),
+        })
+        .then(function() {
+          // если сохранение прошло успешно,
+          // загружаем даннные с сервера
+          load();
+        })
+        .catch(function(err) {
+          console.error(err);
+        });
+      }
+
+      // обработка формы для сохранения
+      var formUser = document.getElementById('user');
+      formUser.addEventListener('submit', function(event) {
+        var payload = {};
+        for (var i = 0; i < formUser.length; ++i) {
+          if (formUser[i].name) {
+            payload[formUser[i].name] = formUser[i].value;
+          }
+        }
+        save(payload);
+        event.preventDefault();
+      });
+
+      // загружаем данные с сервера
+      // при загрузке страницы
+      load();
+    </script>
+
+</body>
+</html>
